@@ -1,0 +1,4 @@
+baseline
+-O0: 148000 generations/s
+-O1: 362000 generations/s
+-O2: 374000 generations/s 
