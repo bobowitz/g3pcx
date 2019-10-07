@@ -95,6 +95,10 @@ int best;
 #include "sort.h"         //subpopulation sorted by fitness 
 #include "replace.h"      //good kids replace few parents
 
+#include <immintrin.h>	  // for simd instructions and data type
+#include "simd_macros.h"  // instruction macros
+#include "asm_functions.h" // functions with a set of asm
+
 #include "fast_code_utils.h"
 
 main()
@@ -160,7 +164,7 @@ main()
 	    for(i=1;i<MAXP;i++)
 	      if(MINIMIZE * oldpop[i].obj < MINIMIZE * tempfit)
 	      {
-		      tempfit=oldpop[i].obj;
+		    tempfit=oldpop[i].obj;
       		best=i;
 	      }     
 
