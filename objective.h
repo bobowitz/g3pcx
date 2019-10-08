@@ -1,6 +1,10 @@
 //This routine calculates the objective function
 //Code your objective function here
 
+#include <immintrin.h>	  // for simd instructions and data type
+#include "simd_macro.h"  // instruction macros
+#include "asm_functions.h" // functions with a set of asm
+
 double objective();
 
 double  objective(x)
@@ -36,21 +40,16 @@ double  objective(x)
    * 5. x[j] - 1
    * 6. fit += (result from 5) ^ 2
    */
-  double x_mm* = _mm_malloc(8 * MAXV, 32);
+  double *x_mm = _mm_malloc(8 * MAXV, 32);
   for (j = 0; j < MAXV; j++) x_mm[j] = x[j];
-  rosen_vmovpd(x_mm);
+  rosen_vmovapd(x_mm);
   // step1. x[j] ^ 2
-  square_ymm0toymm1; 
-  square_ymm3toymm4; 
-  square_ymm6toymm7; 
-  square_ymm9toymm10; 
-  square_ymm12toymm13;
+  rosen_sq_1();
   // step2. subtract from x[j + 1]
-  sub_ymm1_ymm2;
-  sub_ymm4_ymm5;
-  sub_ymm7_ymm8;
-  sub_ymm10_ymm11;
-  sub_ymm13_ymm14;
+  rosen_sub_2();
+  // step3. square
+  rosen_sq_3();
+
 
   
 //  for(j=0; j<MAXV-1; j++)

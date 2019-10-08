@@ -95,9 +95,6 @@ int best;
 #include "sort.h"         //subpopulation sorted by fitness 
 #include "replace.h"      //good kids replace few parents
 
-#include <immintrin.h>	  // for simd instructions and data type
-#include "simd_macros.h"  // instruction macros
-#include "asm_functions.h" // functions with a set of asm
 
 #include "fast_code_utils.h"
 
