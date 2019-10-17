@@ -1,6 +1,7 @@
 //This routine initializes the population (choose the variable bounds according to the need)
 
 void initpop();
+void free_pop();
 
 void initpop()
 {
@@ -8,7 +9,14 @@ void initpop()
   int i,j;
   
   randomize();  // starts the random number generator
-  
+ 
+  for (i = 0; i < MAXP; i++) 
+    oldpop[i].vari = _mm_malloc(8 * MAXV, 32); 
+
+  for (i = 0; i < KIDS + 2; i++)
+    newpop[i].vari = _mm_malloc(8 * MAXV, 32);
+ 
+
   for(i=0;i<MAXP;i++)
     oldpop[i].obj = 0.0;
   
@@ -35,3 +43,13 @@ void initpop()
     }
 }
 
+void free_pop()
+{
+  int i;
+
+  for (i = 0; i < MAXP; i++) 
+    _mm_free(oldpop[i].vari);
+
+  for (i = 0; i < KIDS + 2; i++) 
+    _mm_free(newpop[i].vari);
+}

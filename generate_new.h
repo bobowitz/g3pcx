@@ -5,6 +5,7 @@ double modu(double index[]); //gives modulus of an input vector
 double innerprod(double ind1[],double ind2[]); //gives innerproduct of 2 input vectors
 int generate_new(int h); //main routine here
 
+
 int generate_new(int pass)
 {
   int i,j,num,k;
@@ -17,36 +18,99 @@ int generate_new(int pass)
   double diff[RandParent][MAXV];
   double temp1,temp2,temp3; 
   int temp;
+
+  int arr1_0 = arr1[0];
+  int arr1_j;
+  #ifdef centroid_simd
+  __m256d centroid_pd[5];
+  __m256d vari[RandParent][5];
+  __m256d c = _mm256_set_pd(RandParent, RandParent, RandParent, RandParent);
   
-  for(i=0;i<MAXV;i++)
-    Centroid[i]=0.0;
+  for (j = 0; j < RandParent; j++) {
+    arr1_j = arr1[j];
+    for (i = 0; i < 5; i++) {
+      vari[j][i] = _mm256_load_pd(oldpop[arr1_j].vari + 4 * i);
+	}
+  }
+  for (i = 0; i < 5; i++) {
+    centroid_pd[i] = _mm256_add_pd(vari[0][i], vari[1][i]);     
+  }
+  centroid_pd[0] = _mm256_add_pd(vari[2][0], centroid_pd[0]);
+  centroid_pd[1] = _mm256_add_pd(vari[2][1], centroid_pd[1]);
+  centroid_pd[2] = _mm256_add_pd(vari[2][2], centroid_pd[2]);
+  centroid_pd[3] = _mm256_add_pd(vari[2][3], centroid_pd[3]);
+  centroid_pd[4] = _mm256_add_pd(vari[2][4], centroid_pd[4]);
+
+  centroid_pd[0] = _mm256_div_pd(centroid_pd[0], c);
+  centroid_pd[1] = _mm256_div_pd(centroid_pd[1], c);
+  centroid_pd[2] = _mm256_div_pd(centroid_pd[2], c);
+  centroid_pd[3] = _mm256_div_pd(centroid_pd[3], c);
+  centroid_pd[4] = _mm256_div_pd(centroid_pd[4], c);
   
-  // centroid is calculated here
-  for(i=0;i<MAXV;i++)
-    {
-      for(j=0;j<RandParent;j++)
-	Centroid[i]+=oldpop[arr1[j]].vari[i];
-      
-      Centroid[i]/=RandParent;
-    } 
+  _mm256_store_pd(Centroid, centroid_pd[0]);
+  _mm256_store_pd(Centroid + 4, centroid_pd[1]);
+  _mm256_store_pd(Centroid + 8, centroid_pd[2]);
+  _mm256_store_pd(Centroid + 12, centroid_pd[3]);
+  _mm256_store_pd(Centroid + 16, centroid_pd[4]);
   // calculate the distace (d) from centroid to the index parent arr1[0]  
   // also distance (diff) between index and other parents are computed
-  for(j=1;j<RandParent;j++)
-    {
-      for(i=0;i<MAXV;i++)
-	{ 
-	  if(j == 1) 
-	    d[i]=Centroid[i]-oldpop[arr1[0]].vari[i];
-	  diff[j][i]=oldpop[arr1[j]].vari[i]-oldpop[arr1[0]].vari[i];
+  __m256d d_v[5];
+  __m256d diff_v[RandParent][5];
+  for (i = 0; i < 5; i++) {
+    d_v[i] = _mm256_sub_pd(centroid_pd[i], vari[0][i]);
+  }
+  _mm256_store_pd(d, d_v[0]);
+  _mm256_store_pd(d + 4, d_v[1]);
+  _mm256_store_pd(d + 8, d_v[2]);
+  _mm256_store_pd(d + 12, d_v[3]);
+  _mm256_store_pd(d + 16, d_v[4]);
+
+  for(j = 1; j < RandParent; j++) {
+    for(i = 0; i < 5; i++) { 
+	  diff_v[j][i] = _mm256_sub_pd(vari[j][i], vari[0][i]);
+	  _mm256_store_pd(diff[j] + 4 * i, diff_v[j][i]);
 	}
-      if (modu(diff[j]) < EPSILON) 
-	{	
-        #ifdef PRINTF
-	  printf("RUN=%d, Points are very close to each other. Quitting this run.\n",RUN);
-        #endif
+    if (modu(diff[j]) < EPSILON) {	
+      #ifdef PRINTF
+	    printf("RUN=%d, Points are very close to each other. Quitting this run.\n",RUN);
+      #endif
 	  return (0);
 	}
-    }
+  }
+  #else
+  for(i = 0; i < MAXV; i += 4) {
+    Centroid[i] = oldpop[arr1_0].vari[i];
+    Centroid[i + 1] = oldpop[arr1_0].vari[i + 1];
+    Centroid[i + 2] = oldpop[arr1_0].vari[i + 2];
+    Centroid[i + 3] = oldpop[arr1_0].vari[i + 3];
+  }
+  for (j = 1; j < RandParent; j++) {
+    int arr1_j = arr1[j];
+    for (i = 0; i < MAXV; i += 4) {
+      Centroid[i] += oldpop[arr1_j].vari[i];
+      Centroid[i + 1] += oldpop[arr1_j].vari[i + 1];
+      Centroid[i + 2] += oldpop[arr1_j].vari[i + 2];
+      Centroid[i + 3] += oldpop[arr1_j].vari[i + 3];
+	}
+  }
+  for (i = 0; i < MAXV; i++) {
+    Centroid[i] /= RandParent;
+  }
+  for(j = 1; j < RandParent; j++) {
+    for (i = 0; i < MAXV; i++) {
+      if (j == 1)
+	    d[i] = Centroid[i] - oldpop[arr1[0]].vari[i];
+      diff[j][i] = oldpop[arr1[j]].vari[i] - oldpop[arr1[0]].vari[i];
+	}
+    if (modu(diff[j]) < EPSILON) {	
+      #ifdef PRINTF
+	    printf("RUN=%d, Points are very close to each other. Quitting this run.\n",RUN);
+      #endif
+	  return (0);
+	}
+  }
+  #endif
+
   dist=modu(d); // modu calculates the magnitude of the vector
   
   if (dist < EPSILON) 

@@ -36,6 +36,7 @@ Please use this program for any purpose freely but make sure to refer to Prof K.
 #include<math.h>
 #include<stdlib.h>
 #include<ctype.h>
+#include<stdbool.h>
 
 //------------------------------------------------------------------------------------------- 
 
@@ -62,6 +63,8 @@ Please use this program for any purpose freely but make sure to refer to Prof K.
 
 
 #define rosen // choose the function: ellip, schwefel, rosen
+//#define rosen_simd
+#define centroid_simd
 //#define PRINTF
 //#define FPRINTF
 
@@ -70,7 +73,7 @@ void arrnd();
 
 /*global variables declaration*/
 struct pop{
-  double vari[MAXV];
+  double *vari;
   double obj;
 } oldpop[MAXP],newpop[KIDS+2];
 
@@ -189,6 +192,7 @@ main()
     #endif
   }
 
+  free_pop();
   #ifdef FPRINTF
   fclose(fpt1);
   fclose(fpt2);
