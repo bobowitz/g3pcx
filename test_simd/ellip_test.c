@@ -142,9 +142,8 @@ main()
 	    tempfit+=objective(oldpop[count].vari);
 	  }
     long long et = rdtsc();
-    double f = tempfit;
-    f = f - tempfit;
-    f = 3.4e9; // 3.4 GHz
+    printf("tempfit = %f\n", tempfit);
+    double f = 3.4e9; // 3.4 GHz
     printf("Computed %d objective functions in %d cycles\n", count, et - st);
     printf("Objectives/s: %f\n", ((double) count * f) / ((double) et - st));
     
