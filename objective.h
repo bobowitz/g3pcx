@@ -17,6 +17,16 @@ double  objective(x)
     fit+=((j+1)*(x[j]*x[j]));
 #endif
   
+#ifdef schwefel_opt
+  // Schwefel's function (optimized)
+  sumSCH = 0;
+  for(j=0; j<MAXV-1; j++)
+    {
+      sumSCH += x[j];
+      fit += sumSCH * sumSCH;
+    }
+#endif
+
 #ifdef schwefel
   // Schwefel's function
   for(j=0; j<MAXV; j++)

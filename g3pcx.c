@@ -61,9 +61,9 @@ Please use this program for any purpose freely but make sure to refer to Prof K.
 #define RandParent M+2     //number of parents participating in PCX 
 
 
-#define rosen // choose the function: ellip, schwefel, rosen
-//#define PRINTF
-//#define FPRINTF
+#define schwefel_opt // choose the function: ellip, schwefel, rosen
+#define PRINTF
+#define FPRINTF
 
 /*functions declaration*/
 void arrnd();
@@ -138,38 +138,38 @@ main()
     tempfit=oldpop[best].obj;
     long long st = rdtsc();
     for(count=1;((count<=gen)&&(tempfit>=LIMIT));count++)
-	  {
-	    arrnd();           //random array of parents to do PCX is formed
-	    for(i=0;i<kids;i++)
-	    {
-	      tag = generate_new(i); //generate a child using PCX     
-	      if (tag == 0) break;
-	    }
-	    if (tag == 0) break;
+    {
+      arrnd();           //random array of parents to do PCX is formed
+      for(i=0;i<kids;i++)
+      {
+        tag = generate_new(i); //generate a child using PCX     
+        if (tag == 0) break;
+      }
+      if (tag == 0) break;
 
-	    find_parents();  // form a pool from which a solution is to be 
+      find_parents();  // form a pool from which a solution is to be 
                            //   replaced by the created child
-	  
-	    sort();          // sort the kids+parents by fitness
+    
+      sort();          // sort the kids+parents by fitness
 
-	    rep_parents();   // a chosen parent is replaced by the child
-	    
-	    //finding the best in the population 
-	    best=0;
-	    tempfit=oldpop[0].obj;
-	    for(i=1;i<MAXP;i++)
-	      if(MINIMIZE * oldpop[i].obj < MINIMIZE * tempfit)
-	      {
-		      tempfit=oldpop[i].obj;
-      		best=i;
-	      }     
+      rep_parents();   // a chosen parent is replaced by the child
+      
+      //finding the best in the population 
+      best=0;
+      tempfit=oldpop[0].obj;
+      for(i=1;i<MAXP;i++)
+        if(MINIMIZE * oldpop[i].obj < MINIMIZE * tempfit)
+        {
+          tempfit=oldpop[i].obj;
+          best=i;
+        }     
 
-	    // print out results after every 100 generations
+      // print out results after every 100 generations
       #ifdef FPRINTF
-	    if (((count%100)==0) || (tempfit <= LIMIT))
-	      fprintf(fpt1,"%d    %e\n",(count*kids),tempfit);
+      if (((count%100)==0) || (tempfit <= LIMIT))
+        fprintf(fpt1,"%d    %e\n",(count*kids),tempfit);
       #endif
-	  }
+    }
     long long et = rdtsc();
     double f = 3.4e9; // 3.4 GHz
     printf("Computed %d generations in %d cycles\n", count, et - st);
@@ -181,7 +181,7 @@ main()
     fprintf(fpt2,"Best solution obtained after %d function evaluations: \n",(count*kids));
     
     for(i=0;i<MAXV;i++) 
-  	  fprintf(fpt2,"%e, ",oldpop[best].vari[i]);
+      fprintf(fpt2,"%e, ",oldpop[best].vari[i]);
     
     fprintf(fpt2,"\n\nFitness of this best solution: %e\n",tempfit);
     fprintf(fpt2,"\n");
