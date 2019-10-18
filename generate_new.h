@@ -5,6 +5,8 @@ double modu(double index[]); //gives modulus of an input vector
 double innerprod(double ind1[],double ind2[]); //gives innerproduct of 2 input vectors
 int generate_new(int h); //main routine here
 
+unsigned long long time_cent = 0;
+unsigned long long count_cent = 0;
 
 int generate_new(int pass)
 {
@@ -22,24 +24,38 @@ int generate_new(int pass)
   int arr1_0 = arr1[0];
   int arr1_j;
   #ifdef centroid_simd
+  time_cent++;
+  unsigned long long start = rdtsc();
+
   __m256d centroid_pd[5];
-  __m256d vari[RandParent][5];
-  __m256d c = _mm256_set_pd(RandParent, RandParent, RandParent, RandParent);
+  __m256d vari[3][5];
   
-  for (j = 0; j < RandParent; j++) {
-    arr1_j = arr1[j];
-    for (i = 0; i < 5; i++) {
-      vari[j][i] = _mm256_load_pd(oldpop[arr1_j].vari + 4 * i);
+  for (j = 0; j < 2; j++) {
+    double *oldpop_arr1_j_vari = oldpop[arr1[j]].vari;
+	for (i = 0; i < 5; i++) {
+      vari[j][i] = _mm256_load_pd(oldpop_arr1_j_vari + 4 * i);
 	}
   }
+  
+  centroid_pd[0] = _mm256_add_pd(vari[0][0], vari[1][0]);
+  centroid_pd[1] = _mm256_add_pd(vari[0][1], vari[1][1]);
+  centroid_pd[2] = _mm256_add_pd(vari[0][2], vari[1][2]);
+  centroid_pd[3] = _mm256_add_pd(vari[0][3], vari[1][3]);
+  centroid_pd[4] = _mm256_add_pd(vari[0][4], vari[1][4]);
+ 
+  j = 2;
+  double *oldpop_arr1_j_vari = oldpop[arr1[j]].vari;
   for (i = 0; i < 5; i++) {
-    centroid_pd[i] = _mm256_add_pd(vari[0][i], vari[1][i]);     
+    vari[2][i] = _mm256_load_pd(oldpop_arr1_j_vari + 4 * i);
   }
+  
   centroid_pd[0] = _mm256_add_pd(vari[2][0], centroid_pd[0]);
   centroid_pd[1] = _mm256_add_pd(vari[2][1], centroid_pd[1]);
   centroid_pd[2] = _mm256_add_pd(vari[2][2], centroid_pd[2]);
   centroid_pd[3] = _mm256_add_pd(vari[2][3], centroid_pd[3]);
   centroid_pd[4] = _mm256_add_pd(vari[2][4], centroid_pd[4]);
+  
+  __m256d c = _mm256_set_pd(3.0, 3.0, 3.0, 3.0);
 
   centroid_pd[0] = _mm256_div_pd(centroid_pd[0], c);
   centroid_pd[1] = _mm256_div_pd(centroid_pd[1], c);
@@ -64,7 +80,6 @@ int generate_new(int pass)
   _mm256_store_pd(d + 8, d_v[2]);
   _mm256_store_pd(d + 12, d_v[3]);
   _mm256_store_pd(d + 16, d_v[4]);
-
   for(j = 1; j < RandParent; j++) {
     for(i = 0; i < 5; i++) { 
 	  diff_v[j][i] = _mm256_sub_pd(vari[j][i], vari[0][i]);
@@ -77,23 +92,16 @@ int generate_new(int pass)
 	  return (0);
 	}
   }
+  count_cent += rdtsc() - start;
   #else
-  for(i = 0; i < MAXV; i += 4) {
-    Centroid[i] = oldpop[arr1_0].vari[i];
-    Centroid[i + 1] = oldpop[arr1_0].vari[i + 1];
-    Centroid[i + 2] = oldpop[arr1_0].vari[i + 2];
-    Centroid[i + 3] = oldpop[arr1_0].vari[i + 3];
-  }
-  for (j = 1; j < RandParent; j++) {
-    int arr1_j = arr1[j];
-    for (i = 0; i < MAXV; i += 4) {
-      Centroid[i] += oldpop[arr1_j].vari[i];
-      Centroid[i + 1] += oldpop[arr1_j].vari[i + 1];
-      Centroid[i + 2] += oldpop[arr1_j].vari[i + 2];
-      Centroid[i + 3] += oldpop[arr1_j].vari[i + 3];
-	}
-  }
+  time_cent++;
+  unsigned long long start = rdtsc();
+  for(i = 0; i < MAXV; i++) 
+    Centroid[i] = 0.0;
+
   for (i = 0; i < MAXV; i++) {
+    for (j = 0; j < RandParent; j++)
+	  Centroid[i] += oldpop[arr1[j]].vari[i];
     Centroid[i] /= RandParent;
   }
   for(j = 1; j < RandParent; j++) {
@@ -109,6 +117,7 @@ int generate_new(int pass)
 	  return (0);
 	}
   }
+  count_cent += rdtsc() - start;
   #endif
 
   dist=modu(d); // modu calculates the magnitude of the vector

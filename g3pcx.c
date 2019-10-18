@@ -64,7 +64,7 @@ Please use this program for any purpose freely but make sure to refer to Prof K.
 
 #define rosen // choose the function: ellip, schwefel, rosen
 //#define rosen_simd
-#define centroid_simd
+//#define centroid_simd
 //#define PRINTF
 //#define FPRINTF
 
@@ -90,6 +90,8 @@ double mean_d,var_d;
 double dis_opt;
 int best;
 
+#include "fast_code_utils.h"
+
 #include "objective.h"    //objective function
 #include "random.h"       //random number generator
 #include "initpop.h"      //population initialized
@@ -99,7 +101,6 @@ int best;
 #include "replace.h"      //good kids replace few parents
 
 
-#include "fast_code_utils.h"
 
 main()
 {
@@ -178,6 +179,8 @@ main()
     double f = 3.4e9; // 3.4 GHz
     printf("Computed %d generations in %d cycles\n", count, et - st);
     printf("Generations/s: %f\n", ((double) count * f) / ((double) et - st));
+	printf("# of Rosen: %ld\n", obj_count / time);
+	printf("# of Centroid and Distance: %ld\n\n", count_cent / time_cent);
     
     #ifdef FPRINTF
     fprintf(fpt1,"\n");
