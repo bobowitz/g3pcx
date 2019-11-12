@@ -36,8 +36,8 @@ Please use this program for any purpose freely but make sure to refer to Prof K.
 #include<math.h>
 #include<stdlib.h>
 #include<ctype.h>
-#include<stdbool.h>
-#include<immintrin.h>
+#include <immintrin.h>
+#include "fast_code_utils.h"
 
 //------------------------------------------------------------------------------------------- 
 
@@ -62,11 +62,9 @@ Please use this program for any purpose freely but make sure to refer to Prof K.
 #define MINIMIZE 1      //set 1 to minimize and -1 to maximize
 #define RandParent M+2     //number of parents participating in PCX 
 
-
-#define ellip_simd // choose the function: ellip, schwefel, rosen
 #define centroid_simd
-//#define PRINTF
-//#define FPRINTF
+#define ellip_simd // choose the function: ellip, schwefel, rosen
+#define FPRINTF
 
 /*functions declaration*/
 void arrnd();
@@ -92,13 +90,10 @@ int best;
 
 __m256d step_arr[5];
 
-#include "fast_code_utils.h"
-
 #include "objective.h"    //objective function
 #include "random.h"       //random number generator
 #include "initpop.h"      //population initialized
 #include "generate_new.h" //generates a child from participating parents:PCX 
-//#include "popvar.h"       //population variance (used only for experiments)
 #include "sort.h"         //subpopulation sorted by fitness 
 #include "replace.h"      //good kids replace few parents
 
@@ -107,47 +102,37 @@ main()
   int i,j,h;
   double u,v,w;
   double tempfit;
+  double exec_time, avg_time = 0.0;
   FILE *fpt1,*fpt2;
   int tag;
+  unsigned long long start_t, end_t, cycles, avg_cycles = 0.0;
   
   basic_seed=0.4122;   //arbitrary choice
   kids = KIDS;
   
   gen = MAXFUN/kids;   //so that max number of function evaluations is fixed at 1 million set above
- 
+
   u = 0.0;
   for (j = 0; j < 5; j++) {
     step_arr[j] = _mm256_setr_pd(u + 1.0, u + 2.0, u + 3.0, u + 4.0);
-	u += 4.0;
+    u = u + 4.0;
   }
 
-  #ifdef FPRINTF
-  fpt2=fopen("2.out","w");
-  fprintf(fpt2,"             Initial Parameters \n\n");
-  fprintf(fpt2,"Population size : %d\n",MAXP);
-  fprintf(fpt2,"Number of variables : %d\n",MAXV);
-  fprintf(fpt2,"Pool size of kids formed by PCX : %d\n",KIDS);
-  fprintf(fpt2,"Number of parents participating in PCX : %d\n",RandParent);
-  fprintf(fpt2,"Number of parents to be replaced by good kids : %d\n",family);
-  fprintf(fpt2,"Sigma eta : %lf\n",sigma_eta);
-  fprintf(fpt2,"Sigma zeta : %lf\n",sigma_zeta);
-  fprintf(fpt2,"Best fitness required : %e\n",LIMIT);
-  fprintf(fpt2,"Number of runs desired : %d\n\n",MAXRUN);  
-  fclose(fpt2);  
-
-  fpt1=fopen("1.out","w"); // func eval versus best fitness
-  fpt2=fopen("2.out","a"); // best solution details
-  #endif
-  
   for(RUN=1;RUN<=MAXRUN;RUN++)
-  { 
+    { 
     seed=basic_seed+(1.0-basic_seed)*(double)(RUN-1)/(double)MAXRUN;
     if(seed>1.0) printf("\n warning!!! seed number exceeds 1.0");
       
     initpop();   //population initialized
-
+    start_t = rdtsc();
+    for (i = 0; i < 100; i++)
+      tag = generate_new(0);
+    end_t = rdtsc();
+    avg_cycles = (end_t - start_t) / 100;
+    printf("Tag: %d\nAverage cycles: %d\n", tag, avg_cycles);
     tempfit=oldpop[best].obj;
     long long st = rdtsc();
+
     for(count=1;((count<=gen)&&(tempfit>=LIMIT));count++)
 	  {
 	    arrnd();           //random array of parents to do PCX is formed
@@ -171,7 +156,7 @@ main()
 	    for(i=1;i<MAXP;i++)
 	      if(MINIMIZE * oldpop[i].obj < MINIMIZE * tempfit)
 	      {
-		    tempfit=oldpop[i].obj;
+		      tempfit=oldpop[i].obj;
       		best=i;
 	      }     
 
@@ -185,29 +170,7 @@ main()
     double f = 3.4e9; // 3.4 GHz
     printf("Computed %d generations in %d cycles\n", count, et - st);
     printf("Generations/s: %f\n", ((double) count * f) / ((double) et - st));
-	/*
-	printf("# of Objective: %ld\n", obj_count / time);
-	printf("# of Innerprod: %ld\n", count_innerprod / time_innerprod);
-	printf("# of Modu: %ld\n", count_modu / time_modu);
-    */
-	printf("# of Centroid and Distance: %ld\n", count_cent / time_cent);
-    #ifdef FPRINTF
-    fprintf(fpt1,"\n");
-    fprintf(fpt2,"\n             Run Number %d  \n",RUN);
-    fprintf(fpt2,"Best solution obtained after %d function evaluations: \n",(count*kids));
-    
-    for(i=0;i<MAXV;i++) 
-  	  fprintf(fpt2,"%e, ",oldpop[best].vari[i]);
-    
-    fprintf(fpt2,"\n\nFitness of this best solution: %e\n",tempfit);
-    fprintf(fpt2,"\n");
-    #endif
-  }
-
-  #ifdef FPRINTF
-  fclose(fpt1);
-  fclose(fpt2);
-  #endif
+  } 
 }
 
 //random array of parents generator
@@ -227,7 +190,7 @@ void arrnd()
   arr1[best]=swp;
   
   for(i=1;i<RandParent;i++)  // shuffle the other parents
-  {
+    {
     u=randomperc();
     index=(u*(MAXP-i))+i;
     
@@ -235,5 +198,23 @@ void arrnd()
     swp=arr1[index];
     arr1[index]=arr1[i];
     arr1[i]=swp;
-  }
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

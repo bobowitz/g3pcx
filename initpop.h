@@ -26,7 +26,7 @@ void initpop()
 	y[3]=(-10.0)+(5.0*x[3]);
 	// Because of indexing and endianness, we have to use setr instead of
 	// set.
-	oldpop[i].vari[j] = _mm256_setr_pd(x[0], x[1], x[2], x[3]);
+	oldpop[i].vari[j] = _mm256_setr_pd(y[0], y[1], y[2], y[3]);
       }
 
   // solutions are evaluated and best id is computed
@@ -43,3 +43,4 @@ void initpop()
 	}
     }
 }
+

@@ -1,7 +1,8 @@
 //This routine is the implementation of PCX operator and associated functions
 //Do not change anything here without understanding the paper
 
-double modu(double index[]); //gives modulus of an input vector
+#include "modu.h"
+
 double innerprod(double ind1[],double ind2[]); //gives innerproduct of 2 input vectors
 int generate_new(int h); //main routine here
 
@@ -75,16 +76,14 @@ int generate_new(int pass)
   _mm256_store_pd(d + 16, d_v[4]);
 
   for(j = 1; j < RandParent; j++) {
-    for(i = 0; i < 5; i++) { 
-	  diff_v[j][i] = _mm256_sub_pd(vari[j][i], vari[0][i]);
-	  _mm256_store_pd(diff[j] + 4 * i, diff_v[j][i]);
-	}
-    if (modu(diff[j]) < EPSILON) {	
+    for(i = 0; i < 5; i++)
+      diff_v[j][i] = _mm256_sub_pd(vari[j][i], vari[0][i]);
+    if (modu_simd(diff_v[j]) < EPSILON) {	
       #ifdef PRINTF
-	    printf("RUN=%d, Points are very close to each other. Quitting this run.\n",RUN);
+      printf("RUN=%d, Points are very close to each other. Quitting this run.\n",RUN);
       #endif
-	  return (0);
-	}
+      return (0);
+    }
   }
   count_cent += rdtsc() - start;
   #else
@@ -114,7 +113,7 @@ int generate_new(int pass)
   count_cent += rdtsc() - start;
   #endif
 
-  dist=modu(d); // modu calculates the magnitude of the vector
+  dist=modu_simd(d_v); // modu calculates the magnitude of the vector
   
   if (dist < EPSILON) 
     {
@@ -128,9 +127,9 @@ int generate_new(int pass)
   for(i=1;i<RandParent;i++)
     {
       temp1=innerprod(diff[i],d);
-      temp2=temp1/(modu(diff[i])*dist);
+      temp2=temp1/(modu_simd(diff_v[i])*dist);
       temp3=1.0-pow(temp2,2.0);
-      D[i]=modu(diff[i])*sqrt(temp3);
+      D[i]=modu_simd(diff_v[i])*sqrt(temp3);
     }
   
   D_not=0;
@@ -183,24 +182,6 @@ int generate_new(int pass)
 
   return (1);
 } 
-
-// calculates the magnitude of a vector
-double modu(double index[])
-{
-  //time_modu++;
-  //unsigned long long start = rdtsc();
-  int i;
-  double sum,modul;
-
-  sum=0.0;
-  for(i=0;i<MAXV;i++)
-    sum+=(index[i]*index[i]);
-  
-  modul=sqrt(sum);
-
-  //count_modu += rdtsc() - start;
-  return modul;
-}   
 
 // calculates the inner product of two vectors
 double innerprod(double ind1[],double ind2[])

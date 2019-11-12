@@ -33,15 +33,10 @@ void find_parents()   //here the parents to be replaced are added to the tempora
   
   for(j=0;j<family;j++)
     {
-	/*
-      for(i=0;i<MAXV;i++)
+      for(i=0;i<5;i++)
 	newpop[kids+j].vari[i]=oldpop[mom[j]].vari[i];
-      */
-	  for (i = 0; i < 5; i++) {
-	    newpop[kids+j].vari[i] = oldpop[mom[j]].vari[i];
-	  }
-      newpop[kids+j].obj=objective(newpop[kids+j].vari);
       
+      newpop[kids+j].obj=objective(newpop[kids+j].vari);
     }
 }
 
@@ -52,13 +47,9 @@ void rep_parents()   //here the best (1 or 2) individuals replace the family of 
   int i,j;           
   for(j=0;j<family;j++)
     {
-	  for (i = 0; i < 5; i++) {
-	    oldpop[mom[j]].vari[i] = newpop[list[j]].vari[i];
-	  }
-	  /*
-      for(i=0;i<MAXV;i++)
+      for(i=0;i<5;i++)
        oldpop[mom[j]].vari[i]=newpop[list[j]].vari[i];
-      */
+      
       oldpop[mom[j]].obj=objective(oldpop[mom[j]].vari);
       
     }
