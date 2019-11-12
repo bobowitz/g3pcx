@@ -112,6 +112,24 @@ main()
   
   gen = MAXFUN/kids;   //so that max number of function evaluations is fixed at 1 million set above
 
+  #ifdef FPRINTF
+  fpt2=fopen("2.out","w");
+  fprintf(fpt2,"             Initial Parameters \n\n");
+  fprintf(fpt2,"Population size : %d\n",MAXP);
+  fprintf(fpt2,"Number of variables : %d\n",MAXV);
+  fprintf(fpt2,"Pool size of kids formed by PCX : %d\n",KIDS);
+  fprintf(fpt2,"Number of parents participating in PCX : %d\n",RandParent);
+  fprintf(fpt2,"Number of parents to be replaced by good kids : %d\n",family);
+  fprintf(fpt2,"Sigma eta : %lf\n",sigma_eta);
+  fprintf(fpt2,"Sigma zeta : %lf\n",sigma_zeta);
+  fprintf(fpt2,"Best fitness required : %e\n",LIMIT);
+  fprintf(fpt2,"Number of runs desired : %d\n\n",MAXRUN);  
+  fclose(fpt2);  
+
+  fpt1=fopen("1.out","w"); // func eval versus best fitness
+  fpt2=fopen("2.out","a"); // best solution details
+  #endif
+
   u = 0.0;
   for (j = 0; j < 5; j++) {
     step_arr[j] = _mm256_setr_pd(u + 1.0, u + 2.0, u + 3.0, u + 4.0);
@@ -133,39 +151,36 @@ main()
     tempfit=oldpop[best].obj;
     long long st = rdtsc();
 
-    for(count=1;((count<=gen)&&(tempfit>=LIMIT));count++)
-	  {
-	    arrnd();           //random array of parents to do PCX is formed
-	    for(i=0;i<kids;i++)
-	    {
-	      tag = generate_new(i); //generate a child using PCX     
-	      if (tag == 0) break;
-	    }
-	    if (tag == 0) break;
+    for(count=1;((count<=gen)&&(tempfit>=LIMIT));count++){
+      arrnd();           //random array of parents to do PCX is formed
+      for(i=0;i<kids;i++){
+        tag = generate_new(i); //generate a child using PCX     
+        if (tag == 0) break;
+      }
+      if (tag == 0) break;
 
-	    find_parents();  // form a pool from which a solution is to be 
-                           //   replaced by the created child
-	  
-	    sort();          // sort the kids+parents by fitness
+      find_parents();  // form a pool from which a solution is to be 
+                       //   replaced by the created child
+      
+      sort();          // sort the kids+parents by fitness
 
-	    rep_parents();   // a chosen parent is replaced by the child
-	    
-	    //finding the best in the population 
-	    best=0;
-	    tempfit=oldpop[0].obj;
-	    for(i=1;i<MAXP;i++)
-	      if(MINIMIZE * oldpop[i].obj < MINIMIZE * tempfit)
-	      {
-		      tempfit=oldpop[i].obj;
-      		best=i;
-	      }     
+      rep_parents();   // a chosen parent is replaced by the child
+        
+      //finding the best in the population 
+      best=0;
+      tempfit=oldpop[0].obj;
+      for(i=1;i<MAXP;i++)
+        if(MINIMIZE * oldpop[i].obj < MINIMIZE * tempfit){
+          tempfit=oldpop[i].obj;
+          best=i;
+        }     
 
-	    // print out results after every 100 generations
+      // print out results after every 100 generations
       #ifdef FPRINTF
-	    if (((count%100)==0) || (tempfit <= LIMIT))
-	      fprintf(fpt1,"%d    %e\n",(count*kids),tempfit);
+      if (((count%100)==0) || (tempfit <= LIMIT))
+        fprintf(fpt1,"%d    %e\n",(count*kids),tempfit);
       #endif
-	  }
+    }
     long long et = rdtsc();
     double f = 3.4e9; // 3.4 GHz
     printf("Computed %d generations in %d cycles\n", count, et - st);
