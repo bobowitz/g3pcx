@@ -61,9 +61,9 @@ Please use this program for any purpose freely but make sure to refer to Prof K.
 #define RandParent M+2     //number of parents participating in PCX 
 
 
-#define rosen // choose the function: ellip, schwefel, rosen
+#define ellip // choose the function: ellip, schwefel, rosen
 //#define PRINTF
-//#define FPRINTF
+#define FPRINTF
 
 /*functions declaration*/
 void arrnd();
