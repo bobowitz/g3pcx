@@ -61,7 +61,7 @@ Please use this program for any purpose freely but make sure to refer to Prof K.
 #define RandParent M+2     //number of parents participating in PCX 
 
 
-#define schwefel_opt2 // choose the function: ellip, schwefel, rosen
+#define schwefel_opt // choose the function: ellip, schwefel, rosen
 #define PRINTF
 #define FPRINTF
 
@@ -175,6 +175,19 @@ main()
     printf("Computed %d generations in %d cycles\n", count, et - st);
     printf("Generations/s: %f\n", ((double) count * f) / ((double) et - st));
     
+    #define INSTRUCTIONS 32000
+    double x[INSTRUCTIONS + 1][20] = {0};
+
+    double fit = 0.0;
+    st = rdtsc();
+    for(i = 0; i < INSTRUCTIONS; i++) {
+      x[i+1][0] += objective(x[i]);
+    }
+    et = rdtsc();
+    printf("Computed 32 objectives in %d cycles\n", et - st);
+    printf("cycles/obj: %f\n", ((double) et - st) / 30.0);
+    printf("%f\n", x[INSTRUCTIONS][0]);
+
     #ifdef FPRINTF
     fprintf(fpt1,"\n");
     fprintf(fpt2,"\n             Run Number %d  \n",RUN);
