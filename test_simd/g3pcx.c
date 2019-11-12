@@ -87,6 +87,8 @@ double mean_d,var_d;
 double dis_opt;
 int best;
 
+#include "fast_code_utils.h"
+
 #include "objective.h"    //objective function
 #include "random.h"       //random number generator
 #include "initpop.h"      //population initialized
@@ -95,7 +97,6 @@ int best;
 #include "sort.h"         //subpopulation sorted by fitness 
 #include "replace.h"      //good kids replace few parents
 
-#include "fast_code_utils.h"
 
 main()
 {
@@ -128,13 +129,20 @@ main()
   fpt2=fopen("2.out","a"); // best solution details
   #endif
   
+  unsigned long long start_t, end_t, avg_cycles;
   for(RUN=1;RUN<=MAXRUN;RUN++)
   { 
     seed=basic_seed+(1.0-basic_seed)*(double)(RUN-1)/(double)MAXRUN;
     if(seed>1.0) printf("\n warning!!! seed number exceeds 1.0");
       
     initpop();   //population initialized
-
+    start_t = rdtsc();
+    for (i = 0; i < 100; i++)
+      tag = generate_new(0);
+    end_t = rdtsc();
+    avg_cycles = (end_t - start_t) / 100;
+    printf("Tag: %d\nAverage cycles: %d\n", tag, avg_cycles);
+    /*
     tempfit=oldpop[best].obj;
     long long st = rdtsc();
     for(count=1;((count<=gen)&&(tempfit>=LIMIT));count++)
@@ -174,7 +182,7 @@ main()
     double f = 3.4e9; // 3.4 GHz
     printf("Computed %d generations in %d cycles\n", count, et - st);
     printf("Generations/s: %f\n", ((double) count * f) / ((double) et - st));
-    
+    */
     #ifdef FPRINTF
     fprintf(fpt1,"\n");
     fprintf(fpt2,"\n             Run Number %d  \n",RUN);

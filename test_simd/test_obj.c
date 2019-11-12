@@ -127,6 +127,10 @@ main()
   avg_cycles = avg_cycles / 10;
   avg_time = avg_time / 10.0;
   printf("Average cycles: %u\nAverage time: %f seconds.\n", avg_cycles, avg_time);
+  printf("Objectives:\n");
+  for (i = 0; i < 5; i++) {
+    printf("%f\n", oldpop[i].obj);
+  }
 }
 
 //random array of parents generator

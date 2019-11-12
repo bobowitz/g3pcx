@@ -7,7 +7,7 @@ int generate_new(int h); //main routine here
 
 int generate_new(int pass)
 {
-  int i,j,num,k;
+  int i,j,num,k,x;
   double Centroid[MAXV];
   double tempvar,tempsum,D_not,dist;
   double tempar1[MAXV];
@@ -39,16 +39,16 @@ int generate_new(int pass)
 	    d[i]=Centroid[i]-oldpop[arr1[0]].vari[i];
 	  diff[j][i]=oldpop[arr1[j]].vari[i]-oldpop[arr1[0]].vari[i];
 	}
-      if (modu(diff[j]) < EPSILON) 
+      /*if (modu(diff[j]) < EPSILON) 
 	{	
         #ifdef PRINTF
 	  printf("RUN=%d, Points are very close to each other. Quitting this run.\n",RUN);
         #endif
 	  return (0);
-	}
+	  }*/
     }
   dist=modu(d); // modu calculates the magnitude of the vector
-  
+  /*
   if (dist < EPSILON) 
     {
       #ifdef PRINTF
@@ -56,8 +56,10 @@ int generate_new(int pass)
       #endif
       return (0);
     }
+  */
   
   // orthogonal directions are computed (see the paper)
+
   for(i=1;i<RandParent;i++)
     {
       temp1=innerprod(diff[i],d);
