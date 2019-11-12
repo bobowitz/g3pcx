@@ -170,7 +170,29 @@ main()
     double f = 3.4e9; // 3.4 GHz
     printf("Computed %d generations in %d cycles\n", count, et - st);
     printf("Generations/s: %f\n", ((double) count * f) / ((double) et - st));
-  } 
+
+    #ifdef FPRINTF
+    fprintf(fpt1,"\n");
+    fprintf(fpt2,"\n             Run Number %d  \n",RUN);
+    fprintf(fpt2,"Best solution obtained after %d function evaluations: \n",(count*kids));
+    
+    double* unpacked;
+    posix_memalign((void **) &unpacked, 32, 32);
+    for(i=0;i<5;i++) {
+      _mm256_store_pd(unpacked, oldpop[best].vari[i]);
+      for(j=0;j<4;j++)
+        fprintf(fpt2,"%e, ", unpacked[j]);
+    }
+    
+    fprintf(fpt2,"\n\nFitness of this best solution: %e\n",tempfit);
+    fprintf(fpt2,"\n");
+    #endif
+  }
+
+  #ifdef FPRINTF
+  fclose(fpt1);
+  fclose(fpt2);
+  #endif 
 }
 
 //random array of parents generator
