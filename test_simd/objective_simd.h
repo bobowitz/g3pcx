@@ -20,7 +20,7 @@ double  objective(x)
 #ifdef ellip_simd
   // Ellipsoidal with simd
   __m256d mul_arr[5];
-  __m256d fit_arr = _mm256_set_pd(0.0, 0.0, 0.0, 0.0);
+  __m256d fit_arr;
  for (j = 0; j < 5; j++)
    mul_arr[j] = _mm256_mul_pd(x[j], x[j]);
  for (j = 0; j < 5; j++)
