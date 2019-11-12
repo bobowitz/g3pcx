@@ -64,7 +64,7 @@ Please use this program for any purpose freely but make sure to refer to Prof K.
 
 #define centroid_simd
 #define ellip_simd // choose the function: ellip, schwefel, rosen
-#define FPRINTF
+//#define FPRINTF
 
 /*functions declaration*/
 void arrnd();
@@ -173,7 +173,7 @@ main()
         if(MINIMIZE * oldpop[i].obj < MINIMIZE * tempfit){
           tempfit=oldpop[i].obj;
           best=i;
-        }     
+        }
 
       // print out results after every 100 generations
       #ifdef FPRINTF
@@ -181,6 +181,7 @@ main()
         fprintf(fpt1,"%d    %e\n",(count*kids),tempfit);
       #endif
     }
+
     long long et = rdtsc();
     double f = 3.4e9; // 3.4 GHz
     printf("Computed %d generations in %d cycles\n", count, et - st);
@@ -190,7 +191,7 @@ main()
     fprintf(fpt1,"\n");
     fprintf(fpt2,"\n             Run Number %d  \n",RUN);
     fprintf(fpt2,"Best solution obtained after %d function evaluations: \n",(count*kids));
-    
+
     double* unpacked;
     posix_memalign((void **) &unpacked, 32, 32);
     for(i=0;i<5;i++) {
@@ -198,7 +199,7 @@ main()
       for(j=0;j<4;j++)
         fprintf(fpt2,"%e, ", unpacked[j]);
     }
-    
+   
     fprintf(fpt2,"\n\nFitness of this best solution: %e\n",tempfit);
     fprintf(fpt2,"\n");
     #endif
