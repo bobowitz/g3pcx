@@ -36,6 +36,8 @@ Please use this program for any purpose freely but make sure to refer to Prof K.
 #include<math.h>
 #include<stdlib.h>
 #include<ctype.h>
+#include<stdbool.h>
+#include<immintrin.h>
 
 //------------------------------------------------------------------------------------------- 
 
@@ -61,7 +63,8 @@ Please use this program for any purpose freely but make sure to refer to Prof K.
 #define RandParent M+2     //number of parents participating in PCX 
 
 
-#define rosen // choose the function: ellip, schwefel, rosen
+#define ellip_simd // choose the function: ellip, schwefel, rosen
+#define centroid_simd
 //#define PRINTF
 //#define FPRINTF
 
@@ -70,7 +73,7 @@ void arrnd();
 
 /*global variables declaration*/
 struct pop{
-  double vari[MAXV];
+  __m256d vari[5];
   double obj;
 } oldpop[MAXP],newpop[KIDS+2];
 
@@ -87,15 +90,17 @@ double mean_d,var_d;
 double dis_opt;
 int best;
 
+__m256d step_arr[5];
+
+#include "fast_code_utils.h"
+
 #include "objective.h"    //objective function
 #include "random.h"       //random number generator
 #include "initpop.h"      //population initialized
 #include "generate_new.h" //generates a child from participating parents:PCX 
-#include "popvar.h"       //population variance (used only for experiments)
+//#include "popvar.h"       //population variance (used only for experiments)
 #include "sort.h"         //subpopulation sorted by fitness 
 #include "replace.h"      //good kids replace few parents
-
-#include "fast_code_utils.h"
 
 main()
 {
@@ -109,7 +114,13 @@ main()
   kids = KIDS;
   
   gen = MAXFUN/kids;   //so that max number of function evaluations is fixed at 1 million set above
-  
+ 
+  u = 0.0;
+  for (j = 0; j < 5; j++) {
+    step_arr[j] = _mm256_setr_pd(u + 1.0, u + 2.0, u + 3.0, u + 4.0);
+	u += 4.0;
+  }
+
   #ifdef FPRINTF
   fpt2=fopen("2.out","w");
   fprintf(fpt2,"             Initial Parameters \n\n");
@@ -160,7 +171,7 @@ main()
 	    for(i=1;i<MAXP;i++)
 	      if(MINIMIZE * oldpop[i].obj < MINIMIZE * tempfit)
 	      {
-		      tempfit=oldpop[i].obj;
+		    tempfit=oldpop[i].obj;
       		best=i;
 	      }     
 
@@ -174,7 +185,12 @@ main()
     double f = 3.4e9; // 3.4 GHz
     printf("Computed %d generations in %d cycles\n", count, et - st);
     printf("Generations/s: %f\n", ((double) count * f) / ((double) et - st));
-    
+	/*
+	printf("# of Objective: %ld\n", obj_count / time);
+	printf("# of Innerprod: %ld\n", count_innerprod / time_innerprod);
+	printf("# of Modu: %ld\n", count_modu / time_modu);
+    */
+	printf("# of Centroid and Distance: %ld\n", count_cent / time_cent);
     #ifdef FPRINTF
     fprintf(fpt1,"\n");
     fprintf(fpt2,"\n             Run Number %d  \n",RUN);
@@ -221,21 +237,3 @@ void arrnd()
     arr1[i]=swp;
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
