@@ -6,6 +6,11 @@ build:
 test_modu:
 	gcc -O0 test_modu.c -o test_modu.x -lm -mavx
 
+test_innerprod:
+	gcc -O0 test_innerprod.c -o test_innerprod0.x -lm -mavx
+	gcc -O1 test_innerprod.c -o test_innerprod1.x -lm -mavx
+	gcc -O2 test_innerprod.c -o test_innerprod2.x -lm -mavx
+
 generate:
 	gcc -O0 g3pcx.c -o generate0.x -lm
 	gcc -O1 g3pcx.c -o generate1.x -lm
