@@ -1,7 +1,7 @@
 build:
-	gcc -O0 g3pcx.c -o test_obj_simd0.x -lm -mavx
-	gcc -O1 g3pcx.c -o test_obj_simd1.x -lm -mavx
-	gcc -O2 g3pcx.c -o test_obj_simd2.x -lm -mavx
+	gcc -O0 g3pcx.c -o test_obj_simd0.x -lm -mavx -mfma
+	gcc -O1 g3pcx.c -o test_obj_simd1.x -lm -mavx -mfma
+	gcc -O2 g3pcx.c -o test_obj_simd2.x -lm -mavx -mfma
 
 test_modu:
 	gcc -O0 test_modu.c -o test_modu.x -lm -mavx

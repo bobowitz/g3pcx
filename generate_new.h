@@ -6,15 +6,10 @@
 
 int generate_new(int h); //main routine here
 
+/*
 unsigned long long time_cent = 0;
 unsigned long long count_cent = 0;
-/*
-unsigned long long time_innerprod = 0;
-unsigned long long count_innerprod = 0;
-unsigned long long time_modu = 0;
-unsigned long long count_modu = 0;
 */
-
 int generate_new(int pass)
 {
   int i,j,num,k;
@@ -26,8 +21,8 @@ int generate_new(int pass)
   int arr1_0 = arr1[0];
   int arr1_j;
   #ifdef centroid_simd
-  time_cent++;
-  unsigned long long start = rdtsc();
+ // time_cent++;
+ // unsigned long long start = rdtsc();
 
   __m256d centroid_v[5];
   __m256d *vari[3];
@@ -65,7 +60,7 @@ int generate_new(int pass)
       return (0);
     }
   }
-  count_cent += rdtsc() - start;
+//  count_cent += rdtsc() - start;
   #else
   double Centroid[MAXV];
   double d[MAXV];
@@ -136,9 +131,9 @@ int generate_new(int pass)
  
   __m256d tempvar_v = _mm256_setr_pd(tempvar, tempvar, tempvar, tempvar);
   for (i = 0; i < 5; i++) {
-    d_v[i] = _mm256_mul_pd(d_v[i], tempvar_v);
-	newpop[pass].vari[i] = _mm256_add_pd(d_v[i], newpop[pass].vari[i]);
-//    newpop[pass].vari[i] = _mm256_fmadd_pd(d_v[i], tempvar_v, newpop[pass].vari[i]);
+ //   d_v[i] = _mm256_mul_pd(d_v[i], tempvar_v);
+//	newpop[pass].vari[i] = _mm256_add_pd(d_v[i], newpop[pass].vari[i]);
+    newpop[pass].vari[i] = _mm256_fmadd_pd(d_v[i], tempvar_v, newpop[pass].vari[i]);
   }
 
   // the child is included in the newpop and is evaluated
