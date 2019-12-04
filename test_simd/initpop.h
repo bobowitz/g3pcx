@@ -4,8 +4,9 @@ void initpop();
 
 void initpop()
 {
-  double x,y, objbest;
+  double x,y, objbest, cycles;
   int i,j;
+  unsigned long long start, end;
   
   randomize();  // starts the random number generator
   
@@ -21,7 +22,18 @@ void initpop()
       }
 
   // solutions are evaluated and best id is computed
-  oldpop[0].obj=objective(oldpop[0].vari);
+  start = rdtsc();
+  for (i = 0; i < 50; i++) {
+    oldpop[0].obj=objective(oldpop[0].vari);
+    oldpop[1].obj=objective(oldpop[1].vari);
+    oldpop[2].obj=objective(oldpop[2].vari);
+    oldpop[3].obj=objective(oldpop[3].vari);
+  }
+  end = rdtsc();
+  cycles = (end - start) * 3.4 / 2.4 / 200.0;
+  //printf("objective: %f\n", oldpop[0].obj);
+  printf("objective takes average of %f cycles.\n", cycles);
+
   objbest = oldpop[0].obj;
   best = 0;
   for(i=1;i<MAXP;i++)

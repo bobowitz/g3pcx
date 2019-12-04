@@ -122,24 +122,12 @@ main()
     { 
       seed=basic_seed+(1.0-basic_seed)*(double)(RUN-1)/(double)MAXRUN;
       if(seed>1.0) printf("\n warning!!! seed number exceeds 1.0");
-      start_t = rdtsc();
-      initpop();   //population initialized
-      end_t = rdtsc();
 
-      cycles = end_t - start_t;
-      avg_cycles += cycles;
-      exec_time = cycles * 3.4 / 2400000000;
-      avg_time += exec_time;
+      initpop();   //population initialized
+
       //printf("Population initialized in %u cycles or %f seconds.\n", cycles, exec_time);
       
     } 
-  avg_cycles = avg_cycles / 10;
-  avg_time = avg_time / 10.0;
-  printf("Average cycles: %u\nAverage time: %f seconds.\n", avg_cycles, avg_time);
-  printf("Objectives:\n");
-  for (i = 0; i < 5; i++) {
-    printf("%f\n", oldpop[i].obj);
-  }
 }
 
 //random array of parents generator

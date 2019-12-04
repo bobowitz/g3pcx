@@ -4,8 +4,10 @@ void initpop();
 
 void initpop()
 {
-  double x[4],y[4], objbest;
+  double x[4],y[4], objbest, cycles;
   int i,j;
+  unsigned long long start, end;
+  __m256d fits;
   
   randomize();  // starts the random number generator
   /* unnecessary code
@@ -30,12 +32,29 @@ void initpop()
       }
 
   // solutions are evaluated and best id is computed
-  oldpop[0].obj=objective(oldpop[0].vari);
+  start = rdtsc();
+  for (i = 0; i < 50; i++) {
+    fits = objective(oldpop[0].vari, oldpop[1].vari, oldpop[2].vari,
+		     oldpop[3].vari);
+  }
+  end = rdtsc();
+  //printf("objectives: %f %f %f %f\n", fits[0], fits[1], fits[2], fits[3]);
+  cycles = (end - start) * 3.4 / 2.4 / 50.0;
+  printf("Objective takes an average of %f cycles.\n", cycles);
+
+  for (i = 0; i < MAXP; i+=4) {
+    fits = objective(oldpop[i].vari, oldpop[i+1].vari, oldpop[i+2].vari,
+		     oldpop[i+3].vari);
+    oldpop[i].obj = fits[0];
+    oldpop[i+1].obj = fits[1];
+    oldpop[i+2].obj = fits[2];
+    oldpop[i+3].obj = fits[3];
+  }
+
   objbest = oldpop[0].obj;
   best = 0;
   for(i=1;i<MAXP;i++)
     {
-      oldpop[i].obj=objective(oldpop[i].vari);
       if (MINIMIZE * objbest > MINIMIZE * oldpop[i].obj)
 	{
 	  objbest = oldpop[i].obj;
