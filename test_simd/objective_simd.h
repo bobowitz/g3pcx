@@ -3,16 +3,11 @@
 
 __m256d objective();
 
-__m256d objective(w,x,y,z)
-     __m256d *w;
+__m256d objective(x)
      __m256d *x;
-     __m256d *y;
-     __m256d *z;
 {
   int i,j;
-  double fit, zero = 0.0;
-  
-  fit=0.0;
+  double zero = 0.0;
   
 #ifdef ellip
   // Ellipsoidal function
@@ -22,35 +17,31 @@ __m256d objective(w,x,y,z)
 
 #ifdef ellip_simd
   // Ellipsoidal with simd
-  __m256d mul_arr[4];
-  __m256d fit_arr[4];
-  double fit_totals[4];
+  __m256d mul_arr[5];
+  __m256d fit_arr[5];
   __m256d fits;
   
-  for (i = 0; i < 4; i++)
+  for (i = 0; i < 5; i++)
     fit_arr[i] = _mm256_broadcast_sd(&zero);
-  for (j = 0; j < 5; j++) {
-    mul_arr[0] = _mm256_mul_pd(w[j], w[j]);
-    mul_arr[1] = _mm256_mul_pd(x[j], x[j]);
-    mul_arr[2] = _mm256_mul_pd(y[j], y[j]);
-    mul_arr[3] = _mm256_mul_pd(z[j], z[j]);
+  for (j = 0; j < MAXV; j+=5) {
+    mul_arr[0] = _mm256_mul_pd(x[j], x[j]);
+    mul_arr[1] = _mm256_mul_pd(x[j+1], x[j+1]);
+    mul_arr[2] = _mm256_mul_pd(x[j+2], x[j+2]);
+    mul_arr[3] = _mm256_mul_pd(x[j+3], x[j+3]);
+    mul_arr[4] = _mm256_mul_pd(x[j+4], x[j+4]);
     fit_arr[0] = _mm256_fmadd_pd(mul_arr[0], step_arr[j], fit_arr[0]);
-    fit_arr[1] = _mm256_fmadd_pd(mul_arr[1], step_arr[j], fit_arr[1]);
-    fit_arr[2] = _mm256_fmadd_pd(mul_arr[2], step_arr[j], fit_arr[2]);
-    fit_arr[3] = _mm256_fmadd_pd(mul_arr[3], step_arr[j], fit_arr[3]);
+    fit_arr[1] = _mm256_fmadd_pd(mul_arr[1], step_arr[j+1], fit_arr[1]);
+    fit_arr[2] = _mm256_fmadd_pd(mul_arr[2], step_arr[j+2], fit_arr[2]);
+    fit_arr[3] = _mm256_fmadd_pd(mul_arr[3], step_arr[j+3], fit_arr[3]);
+    fit_arr[4] = _mm256_fmadd_pd(mul_arr[4], step_arr[j+3], fit_arr[4]);
   }
-  fit_arr[0] = _mm256_hadd_pd(fit_arr[0], fit_arr[0]);
-  fit_arr[1] = _mm256_hadd_pd(fit_arr[1], fit_arr[1]);
-  fit_arr[2] = _mm256_hadd_pd(fit_arr[2], fit_arr[2]);
-  fit_arr[3] = _mm256_hadd_pd(fit_arr[3], fit_arr[3]);
+  fit_arr[0] = _mm256_add_pd(fit_arr[0], fit_arr[1]);
+  fit_arr[2] = _mm256_add_pd(fit_arr[2], fit_arr[3]);
+  fit_arr[1] = _mm256_add_pd(fit_arr[0], fit_arr[4]);
 
-  for (i = 0; i < 4; i++)
-    fit_totals[i] = fit_arr[i][0] + fit_arr[i][2];
-  // Can also use indices 1 and 3 within each array.
-
-  fits = _mm256_loadu_pd(fit_totals);
+  fits = _mm256_add_pd(fit_arr[1], fit_arr[2]);
 #endif
-  
+
 #ifdef schwefel
   // Schwefel's function
   for(j=0; j<MAXV; j++)

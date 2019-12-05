@@ -15,8 +15,8 @@ void initpop()
     oldpop[i].obj = 0.0;
   */
   
-  for(i=0;i<MAXP;i++)
-    for(j=0;j<5;j++)
+  for(i=0;i<MAXP_GROUPS;i++)
+    for(j=0;j<MAXV;j++)
       {
 	x[0]=randomperc();    // x is a uniform random number in (0,1)
 	y[0]=(-10.0)+(5.0*x[0]); // the formula used is y=a+(b-a)*x if y should be a random number in (a,b)
@@ -28,38 +28,40 @@ void initpop()
 	y[3]=(-10.0)+(5.0*x[3]);
 	// Because of indexing and endianness, we have to use setr instead of
 	// set.
-	oldpop[i].vari[j] = _mm256_setr_pd(y[0], y[1], y[2], y[3]);
+	oldpop[i].vari[j] = _mm256_loadu_pd(y);
       }
 
   // solutions are evaluated and best id is computed
   start = rdtsc();
-  for (i = 0; i < 50; i++) {
-    fits = objective(oldpop[0].vari, oldpop[1].vari, oldpop[2].vari,
-		     oldpop[3].vari);
+  for (i = 0; i < 200; i++) {
+    fits = objective(oldpop[0].vari);
   }
   end = rdtsc();
   //printf("objectives: %f %f %f %f\n", fits[0], fits[1], fits[2], fits[3]);
-  cycles = (end - start) * 3.4 / 2.4 / 50.0;
+  cycles = (end - start) * 3.4 / 2.4 / 200.0;
   printf("Objective takes an average of %f cycles.\n", cycles);
 
-  for (i = 0; i < MAXP; i+=4) {
-    fits = objective(oldpop[i].vari, oldpop[i+1].vari, oldpop[i+2].vari,
-		     oldpop[i+3].vari);
-    oldpop[i].obj = fits[0];
-    oldpop[i+1].obj = fits[1];
-    oldpop[i+2].obj = fits[2];
-    oldpop[i+3].obj = fits[3];
+  for (i = 0; i < MAXP_GROUPS; i++) {
+    oldpop[i].obj = objective(oldpop[i].vari);
   }
 
-  objbest = oldpop[0].obj;
+  objbest = oldpop[0].obj[0];
   best = 0;
-  for(i=1;i<MAXP;i++)
+  for (i = 1; i < 4; i++) {
+    if (MINIMIZE * objbest > MINIMIZE * oldpop[0].obj[i]) {
+      objbest = oldpop[i].obj[i];
+      best = i;
+    }
+  }
+  for(i=1;i<MAXP_GROUPS;i++)
     {
-      if (MINIMIZE * objbest > MINIMIZE * oldpop[i].obj)
-	{
-	  objbest = oldpop[i].obj;
-	  best = i;
-	}
+      for (j = 0; j < 4; j++) {
+	if (MINIMIZE * objbest > MINIMIZE * oldpop[i].obj[j])
+	  {
+	    objbest = oldpop[i].obj[j];
+	    best = (i * 4) + j;
+	  }
+      }
     }
 }
 

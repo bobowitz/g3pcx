@@ -65,15 +65,19 @@ Please use this program for any purpose freely but make sure to refer to Prof K.
 
 #define ellip_simd // choose the function: ellip, schwefel, rosen
 
+#define MAXP_GROUPS MAXP/4
 /*functions declaration*/
 void arrnd();
 
 /*global variables declaration*/
 struct pop{
-  __m256d vari[5];
-  double obj;
-} oldpop[MAXP],newpop[KIDS+2];
+  __m256d vari[MAXV];
+  __m256d obj;
+} oldpop[MAXP_GROUPS],newpop;
 
+//Each pop struct contains the variables and objectives of 4 population
+//members. For each index of vari, the first element belongs to the first
+//population member, the second to the second member, and so on.
 
 int count; 
 int arr1[MAXP];
@@ -87,7 +91,7 @@ double mean_d,var_d;
 double dis_opt;
 int best;
 
-__m256d step_arr[5];
+__m256d step_arr[20];
 
 #include "objective_simd.h"    //objective function
 #include "random.h"       //random number generator
@@ -112,10 +116,9 @@ main()
   
   gen = MAXFUN/kids;   //so that max number of function evaluations is fixed at 1 million set above
 
-  u = 0.0;
-  for (j = 0; j < 5; j++) {
-    step_arr[j] = _mm256_setr_pd(u + 1.0, u + 2.0, u + 3.0, u + 4.0);
-    u = u + 4.0;
+  for (j = 0; j < 20; j++) {
+    u = j + 1.0;
+    step_arr[j] = _mm256_broadcast_sd(&u);
   }
 
   for(RUN=1;RUN<=MAXRUN;RUN++)
