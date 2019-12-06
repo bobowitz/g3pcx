@@ -34,3 +34,28 @@ double modu(double index[])
   return modul;
 }   
 
+__m256d modu_simdx(__m256d index[])
+{
+  int i;
+  __m256d psum[5];
+  
+  for (i = 0; i < 5; i++)
+    psum[i] = _mm256_set_pd(0.0, 0.0, 0.0, 0.0);
+
+  for(i = 0; i < 20; i += 5){
+    psum[0] = _mm256_fmadd_pd(index[i], index[i], psum[0]);
+    psum[1] = _mm256_fmadd_pd(index[i + 1], index[i + 1], psum[1]);
+    psum[2] = _mm256_fmadd_pd(index[i + 2], index[i + 2], psum[2]);
+    psum[3] = _mm256_fmadd_pd(index[i + 3], index[i + 3], psum[3]);
+    psum[4] = _mm256_fmadd_pd(index[i + 4], index[i + 4], psum[4]);
+  }
+
+  psum[0] = _mm256_add_pd(psum[0], psum[1]);
+  psum[2] = _mm256_add_pd(psum[2], psum[3]);
+  psum[2] = _mm256_add_pd(psum[2], psum[4]);
+  psum[0] = _mm256_add_pd(psum[0], psum[2]);
+
+  return _mm256_sqrt_pd(psum[0]);
+  //return psum[0];
+}   
+

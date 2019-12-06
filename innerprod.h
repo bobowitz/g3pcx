@@ -36,3 +36,23 @@ double innerprod(double ind1[], double ind2[])
 
   return sum;
 }
+
+__m256d innerprod_simdx(__m256d ind1[], __m256d ind2[])
+{
+  int i;
+  __m256d psum[5];
+  for (i = 0; i < 5; i++) psum[i] = _mm256_set_pd(0.0, 0.0, 0.0, 0.0);
+
+  for (i = 0; i < 20; i += 5) {
+    psum[0] = _mm256_fmadd_pd(ind1[i], ind2[i], psum[0]);
+    psum[1] = _mm256_fmadd_pd(ind1[i + 1], ind2[i + 1], psum[1]);
+    psum[2] = _mm256_fmadd_pd(ind1[i + 2], ind2[i + 2], psum[2]);
+    psum[3] = _mm256_fmadd_pd(ind1[i + 3], ind2[i + 3], psum[3]);
+    psum[4] = _mm256_fmadd_pd(ind1[i + 4], ind2[i + 4], psum[4]);
+  }
+  psum[0] = _mm256_add_pd(psum[0], psum[1]);
+  psum[2] = _mm256_add_pd(psum[2], psum[3]);
+  psum[4] = _mm256_add_pd(psum[0], psum[4]);
+
+  return _mm256_add_pd(psum[2], psum[4]);
+}
